@@ -4,6 +4,19 @@ ENV PYTHONUNBUFFERED=1 \
     YOLO_CONFIG_DIR=/tmp/ultralytics \
     MPLCONFIGDIR=/tmp/mpl
 
+RUN if [ -f /etc/apt/sources.list.d/debian.sources ]; then \
+        sed -i \
+            -e 's|http://deb.debian.org/debian|http://mirror.yandex.ru/debian|g' \
+            -e 's|http://security.debian.org/debian-security|http://mirror.yandex.ru/debian-security|g' \
+            /etc/apt/sources.list.d/debian.sources; \
+    fi && \
+    if [ -f /etc/apt/sources.list ]; then \
+        sed -i \
+            -e 's|http://deb.debian.org/debian|http://mirror.yandex.ru/debian|g' \
+            -e 's|http://security.debian.org/debian-security|http://mirror.yandex.ru/debian-security|g' \
+            /etc/apt/sources.list; \
+    fi
+
 # libgl1 нужен, потому что ultralytics подтягивает обычный opencv-python;
 # fonts-dejavu-core — шрифт с кириллицей для подписи на картинках
 RUN apt-get update && apt-get install -y --no-install-recommends \
