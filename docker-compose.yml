@@ -1,0 +1,31 @@
+services:
+  parking-counter:
+    build: .
+    image: parking-counter:latest
+    container_name: parking-counter
+    restart: unless-stopped
+    # файлы в ./data создаются от имени вашего пользователя (задайте PUID/PGID в .env)
+    user: "${PUID:-1000}:${PGID:-1000}"
+    env_file: .env                 # адрес камеры, логин и пароль
+    environment:
+      TZ: Europe/Moscow
+      DATA_DIR: /data
+      MODEL_PATH: /models/best.pt
+      MASK_PATH: /app/mask.png
+      CONF: "0.3"                  # порог уверенности для подсчёта
+      INTERVAL_SEC: "60"           # запуск раз в минуту, на границе минуты
+    volumes:
+      - ./data:/data
+      - ./models:/models:ro
+      - ./mask.png:/app/mask.png:ro
+    healthcheck:                   # «нездоров», если 5 минут нет ни одного успешного кадра
+      test: ["CMD-SHELL", "test -n \"$$(find /data/.heartbeat -mmin -5 2>/dev/null)\""]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 180s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

@@ -1,0 +1,6 @@
+.env
+data/
+models/*.pt
+cvat_pack_*/
+cvat_export/
+__pycache__/
